@@ -25,7 +25,6 @@ func MapResponseListUser(listUser []*entity.User) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return byteJson, nil
 }
 
@@ -35,6 +34,13 @@ func EntityToJson(user _interface.UserInterface) *JSONListUser {
 		Username: user.GetUsername(),
 		Email:    user.GetEmail(),
 	}
-
 	return jsonSingle
+}
+
+func MapResponseUser(user *entity.User) ([]byte, error) {
+	data := map[string]interface{}{
+		"username": user.USERNAME,
+		"email":    user.EMAIL,
+	}
+	return json.Marshal(data)
 }

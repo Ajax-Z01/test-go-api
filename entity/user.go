@@ -1,38 +1,39 @@
 package entity
 
 type User struct {
-	id       int
-	username string
-	email    string
-	password string
+	ID       int    `json:"id,omitempty"`
+	USERNAME string `json:"username,omitempty"`
+	EMAIL    string `json:"email,omitempty"`
 }
 
 type UserDTO struct {
 	ID       int
 	Username string
 	Email    string
-	Password string
 }
 
 func CreateUser(dto UserDTO) *User {
-	user := &User{
-		id:       dto.ID,
-		username: dto.Username,
-		email:    dto.Email,
-		password: dto.Password,
+	return &User{
+		ID:       dto.ID,
+		USERNAME: dto.Username,
+		EMAIL:    dto.Email,
 	}
+}
 
-	return user
+func UpdateUser(user *User, dto UserDTO) {
+	user.ID = dto.ID
+	user.USERNAME = dto.Username
+	user.EMAIL = dto.Email
 }
 
 func (b *User) GetID() int {
-	return b.id
+	return b.ID
 }
 
 func (b *User) GetUsername() string {
-	return b.username
+	return b.USERNAME
 }
 
 func (b *User) GetEmail() string {
-	return b.email
+	return b.EMAIL
 }

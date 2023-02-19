@@ -1,31 +1,88 @@
 package repository
 
 import (
-	"test-go-api/config"
+	"database/sql"
+
 	"test-go-api/entity"
-	"test-go-api/repository/mapper"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetDataUser() ([]*entity.User, error) {
-	db, err := config.MySQLConnection()
+type UserRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) GetAllUsers() ([]*entity.User, error) {
+	users := make([]*entity.User, 0)
+	query := "SELECT id, username, email FROM users"
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user := &entity.User{}
+		err := rows.Scan(&user.ID, &user.USERNAME, &user.EMAIL)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (r *UserRepository) GetUserByID(id int) (*entity.User, error) {
+	user := &entity.User{}
+	query := "SELECT id, username, email FROM users WHERE id = ?"
+	err := r.db.QueryRow(query, id).Scan(&user.ID, &user.USERNAME, &user.EMAIL)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, errRows := db.Query("SELECT id, username, email FROM users")
-	if errRows != nil {
-		return nil, errRows
+	return user, nil
+}
+
+func (r *UserRepository) CreateUser(user *entity.User) error {
+	query := "INSERT INTO users (username, email) VALUES (?, ?)"
+	_, err := r.db.Exec(query, user.USERNAME, user.EMAIL)
+	if err != nil {
+		return err
 	}
 
-	var result []entity.UserDTO
-	for rows.Next() {
-		var user = entity.UserDTO{}
-		errScan := rows.Scan(&user.ID, &user.Username, &user.Email)
-		if errScan != nil {
-			return nil, errScan
-		}
-		result = append(result, user)
+	return nil
+}
+
+func (r *UserRepository) UpdateUser(user *entity.User) error {
+	query := "UPDATE users SET username = ?, email = ? WHERE id = ?"
+	_, err := r.db.Exec(query, user.USERNAME, user.EMAIL, user.ID)
+	if err != nil {
+		return err
 	}
 
-	return mapper.MapToEntity(result), nil
+	return nil
+}
+
+func (ur *UserRepository) DeleteUser(id int) error {
+	stmt, err := ur.db.Prepare("DELETE FROM users WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -10,18 +10,20 @@ import (
 )
 
 func main() {
-	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	//	fmt.Fprintf(w, "Hallo Selamat Datang")
-	//})
+	// initialize router
+	router := mux.NewRouter()
 
-	route := mux.NewRouter()
-	route.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Define route
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hallo Selamat Datang")
 	}).Methods(http.MethodGet)
-	route.HandleFunc("/user/", handler.UserHandler).Methods(http.MethodGet)
+	router.HandleFunc("/users", handler.GetDataUser).Methods("GET")
+	router.HandleFunc("/users/{id}", handler.GetDataByID).Methods("GET")
+	router.HandleFunc("/users/", handler.CreateUser).Methods("POST")
+	router.HandleFunc("/users/{id}", handler.UpdateUser).Methods("PUT")
+	router.HandleFunc("/users/{id}", handler.DeleteUser).Methods("DELETE")
 
-	//http.HandleFunc("/buku", handler.BukuHandler)
-
+	// Run server
 	fmt.Println("http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", route))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
