@@ -3,11 +3,11 @@ package repository
 import (
 	"test-go-api/config"
 	"test-go-api/entity"
+	"test-go-api/repository/mapper"
 )
 
 func GetDataUser() ([]*entity.User, error) {
 	db, err := config.MySQLConnection()
-
 	if err != nil {
 		return nil, err
 	}
@@ -17,16 +17,15 @@ func GetDataUser() ([]*entity.User, error) {
 		return nil, errRows
 	}
 
-	var result []*entity.User
-
+	var result []entity.UserDTO
 	for rows.Next() {
-		var user = entity.User{}
+		var user = entity.UserDTO{}
 		errScan := rows.Scan(&user.ID, &user.Username, &user.Email)
 		if errScan != nil {
 			return nil, errScan
 		}
-		result = append(result, &user)
+		result = append(result, user)
 	}
 
-	return result, nil
+	return mapper.MapToEntity(result), nil
 }

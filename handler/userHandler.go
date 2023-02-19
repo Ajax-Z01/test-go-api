@@ -7,19 +7,11 @@ import (
 )
 
 func UserHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" /* http.MethodGet */ {
-		w.WriteHeader(400)
-		w.Write([]byte("Method not allowed."))
-
-		return
-	}
 
 	user, err := repository.GetDataUser()
-
 	if err != nil {
 		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-
+		_, _ = w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -27,10 +19,11 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 
 	if errJson != nil {
 		w.WriteHeader(500)
-		w.Write([]byte(errJson.Error()))
-
+		_, _ = w.Write([]byte(errJson.Error()))
 		return
 	}
 
-	w.Write(dataJson)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, _ = w.Write(dataJson)
 }
